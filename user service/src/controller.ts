@@ -33,3 +33,34 @@ export const registerUser = TryCatch ( async(req , res ) =>{
         token,
       });
 });
+
+export const loginUser = TryCatch (async(req , res)=>{
+    const {email, password} = req.body
+
+    const user = await User.findOne({email})
+
+    if (!user){
+        res.status(404).json({
+            message:"User not exits",
+        });
+        return;
+    }
+
+    const isMatch =await bcrypt.compare(password,user.password)
+
+    if(!isMatch){
+        res.status(404).json({
+            message:"invalid password",
+        })
+    }
+
+    const token = jwt.sign({_id:user._id},process.env.JWT_ERC as string,{
+        expiresIn:"7d",
+    });
+
+    res.status(200).json({
+        message: "logged in",
+        user,
+        token,
+      });
+});
